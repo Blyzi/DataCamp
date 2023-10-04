@@ -1,1 +1,3 @@
-/dataset
+/datasets/evaluation/images/
+/datasets/test/images/
+/datasets/training/images/
