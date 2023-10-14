@@ -2,4 +2,4 @@
 /datasets/**/*.png
 /datasets/**/*.png
 
-resnet-50-finetuned-eye-disease/
+resnet-*
