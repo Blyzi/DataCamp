@@ -7,3 +7,6 @@ resnet-*
 .DS_Store
 
 nul.pth
+
+.venv
+__pycache__
