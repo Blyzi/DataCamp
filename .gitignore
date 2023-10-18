@@ -3,3 +3,7 @@
 /datasets/**/*.png
 
 resnet-*
+
+.DS_Store
+
+nul.pth
