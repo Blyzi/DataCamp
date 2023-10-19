@@ -1,6 +1,5 @@
 /datasets/**/*.png
-/datasets/**/*.png
-/datasets/**/*.png
+/datasets/debug
 
 resnet-*
 
@@ -10,3 +9,4 @@ nul.pth
 
 .venv
 __pycache__
+lightning_logs
