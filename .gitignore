@@ -5,7 +5,7 @@ resnet-*
 
 .DS_Store
 
-nul.pth
+*.pth
 
 .venv
 __pycache__
