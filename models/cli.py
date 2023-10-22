@@ -78,7 +78,7 @@ if __name__ == '__main__':
     test_df['file_name'] = test_df['file_name'].apply(lambda x: test_dir + x)
 
     one_hot_labels = train_df.drop('file_name', axis=1).sum()[train_df.drop('file_name', axis=1).sum() > LABEL_RARITY_THRESHOLD].index
-    label_names = train_df.drop('file_name', axis=1).columns
+    label_names = train_df.drop('file_name', axis=1)[one_hot_labels].columns.tolist()
 
     train_dataset = MultiLabelDataset(train_df, transforms=transform_image, label_list=one_hot_labels, normalize=normalize_image)
     val_dataset = MultiLabelDataset(val_df, transforms=transform_image, label_list=one_hot_labels, normalize=normalize_image)
