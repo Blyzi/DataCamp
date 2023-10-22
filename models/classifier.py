@@ -95,18 +95,7 @@ def resize_image(image):
     return transforms.Compose([transforms.Resize(IMAGE_SIZE), transforms.CenterCrop(IMAGE_SIZE)])(image)
 
 
-def augment_image(image):
-    return transforms.Compose([
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomVerticalFlip(),
-        transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.6, 1.0), ratio=(1, 1)),
-    ])(image)
-
-
-def transform_image(image):
-    image = resize_image(image)
-    image = augment_image(image)
-
+def get_image_variations(image):
     image_eq = adjust_contrast(image, 1.2)
     image_eq = adjust_sharpness(image_eq, 1.5)
     image_eq = equalize(image_eq)
@@ -118,6 +107,22 @@ def transform_image(image):
     image_sharp = to_grayscale(image_sharp, num_output_channels=1)
 
     return [image, image_eq, image_sharp]
+
+
+def transform_image(image):
+    image = resize_image(image)
+    return get_image_variations(image)
+
+
+def transform_augment_image(image):
+    image = resize_image(image)
+    image = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomVerticalFlip(),
+        transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.6, 1.0), ratio=(1, 1)),
+    ])(image)
+    return get_image_variations(image)
+
 
 # Define the data module
 class DataModule(pl.LightningDataModule):

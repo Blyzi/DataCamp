@@ -2,7 +2,7 @@ import torch
 import lightning.pytorch as pl
 import pandas as pd
 import sys
-from classifier import DataModule, MultiLabelImageClassifierModel, LModule, MultiLabelDataset, transform_image, normalize_image, IMAGE_SIZE, BATCH_SIZE
+from classifier import DataModule, MultiLabelImageClassifierModel, LModule, MultiLabelDataset, transform_augment_image, transform_image, normalize_image, IMAGE_SIZE, BATCH_SIZE
 
 MODEL_NAME = 'Hope'
 LABEL_RARITY_THRESHOLD = 20
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     one_hot_labels = train_df.drop('file_name', axis=1).sum()[train_df.drop('file_name', axis=1).sum() > LABEL_RARITY_THRESHOLD].index
     label_names = train_df.drop('file_name', axis=1)[one_hot_labels].columns.tolist()
 
-    train_dataset = MultiLabelDataset(train_df, transforms=transform_image, label_list=one_hot_labels, normalize=normalize_image)
+    train_dataset = MultiLabelDataset(train_df, transforms=transform_augment_image, label_list=one_hot_labels, normalize=normalize_image)
     val_dataset = MultiLabelDataset(val_df, transforms=transform_image, label_list=one_hot_labels, normalize=normalize_image)
     test_dataset = MultiLabelDataset(test_df, transforms=transform_image, label_list=one_hot_labels, normalize=normalize_image)
 
