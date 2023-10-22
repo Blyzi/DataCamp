@@ -76,10 +76,10 @@ export default function InfoPage() {
         <div className="text-lg font-logo">Unveiling Trutheyes</div>
         <div className="mb-4">
           Shaping a Future of Early Eye Cancer Detection At Trutheyes, our
-          vision transcends technology; it's about safeguarding your health and
-          well-being. We embark on a mission to address a pressing need—early
-          detection of eye cancer. This devastating disease demands attention,
-          and we're here to fill a crucial gap.
+          vision transcends technology; it&apos;s about safeguarding your health
+          and well-being. We embark on a mission to address a pressing
+          need—early detection of eye cancer. This devastating disease demands
+          attention, and we&apos;re here to fill a crucial gap.
         </div>
 
         <div className="text-lg font-logo">Understanding the Need</div>
@@ -95,20 +95,20 @@ export default function InfoPage() {
           Empowering Patients and Healthcare Professionals. Our unwavering
           commitment is to bring advanced diagnostics to your fingertips.
           Trutheyes aspires to be the bridge between individuals and medical
-          practitioners. We're making it easier for healthcare professionals to
-          make accurate and timely diagnoses, and for patients to access the
-          care they need.
+          practitioners. We&apos;re making it easier for healthcare
+          professionals to make accurate and timely diagnoses, and for patients
+          to access the care they need.
         </div>
         <div className="text-lg font-logo">The Heart of Trutheyes</div>
         <div className="mb-4">
           Transparency and Trust At Trutheyes, transparency is our guiding
-          principle. We believe that understanding the "why" behind a medical
-          diagnosis is essential. Our commitment to trust is embodied in the AI
-          models we've created, which provide insights into the decision-making
-          process. Your Role in the Vision You are at the center of our vision.
-          Trutheyes seeks to bring you closer to your ocular health. Together,
-          we can revolutionize early eye cancer detection and make it more
-          accessible than ever before.
+          principle. We believe that understanding the &quot;why&quot; behind a
+          medical diagnosis is essential. Our commitment to trust is embodied in
+          the AI models we&apos;ve created, which provide insights into the
+          decision-making process. Your Role in the Vision You are at the center
+          of our vision. Trutheyes seeks to bring you closer to your ocular
+          health. Together, we can revolutionize early eye cancer detection and
+          make it more accessible than ever before.
           <br />
           <br />
           Actualy, we are able to detect:&#20;
@@ -126,10 +126,10 @@ export default function InfoPage() {
         </div>
         <div className="text-lg font-logo">Join Us on the Journey</div>
         <div className="mb-4">
-          Trutheyes is not just a project; it's a commitment to your well-being.
-          We invite you to join us in shaping a future where early detection is
-          within everyone's reach. Your ocular health matters, and Trutheyes is
-          here to make a difference.
+          Trutheyes is not just a project; it&apos;s a commitment to your
+          well-being. We invite you to join us in shaping a future where early
+          detection is within everyone&apos;s reach. Your ocular health matters,
+          and Trutheyes is here to make a difference.
         </div>
       </div>
     </div>
