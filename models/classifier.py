@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchvision.transforms import v2 as transforms
+import torchvision.transforms.v2 as transforms
 from torchvision.transforms.v2.functional import adjust_contrast, equalize, adjust_gamma, adjust_sharpness, posterize, to_grayscale
 import lightning.pytorch as pl
 import torchmetrics
@@ -24,24 +24,30 @@ STD = [0.16763987, 0.13925351, 0.12256385]
 
 
 class MultiLabelDataset(Dataset):
-    def __init__(self, df, transforms=None, label_list=None, normalize=None):
+    def __init__(self, df, label_list=None, resize=None, transforms=None, normalize=None, augment=False):
         self.label_list = label_list
         self.df = self.encode_dataset(df)
         self.transforms = transforms
         self.normalize = normalize
+        self.augment = augment
+        self.resize = resize
 
     def __getitem__(self, index):
         image, label = self.get_img(index)
 
-        if self.transforms is not None:
+        if self.resize is not None:
+            image = self.resize(image)
+
+        if self.augment:
+            image = self.augment(image)
+
+        if self.transforms is not None and self.normalize is not None:
             # image = transforms.ToTensor()(image)
             # image = image.type(torch.float32)
             image = transforms.Compose([
                 transforms.ToImage(),
                 transforms.ToDtype(torch.float32, scale=True),
             ])(image)
-
-            image = self.normalize(image)
 
             image = transforms.ToPILImage()(image)
             image_layers = self.transforms(image)
@@ -53,7 +59,9 @@ class MultiLabelDataset(Dataset):
                     transforms.ToDtype(torch.float32, scale=True),
                 ])(img)
 
-        image = torch.cat(image_layers, dim=0)
+            image_layers[0] = self.normalize(image_layers[0])
+
+            image = torch.cat(image_layers, dim=0)
 
         return image, label
 
@@ -65,7 +73,8 @@ class MultiLabelDataset(Dataset):
         return Image.open(img_path), label
 
     def encode_dataset(self, df):
-        df['labels'] = df[self.label_list].apply(lambda x: (x.values == 1).astype(int), axis=1)
+        df['labels'] = df[self.label_list].apply(
+            lambda x: (x.values == 1).astype(int), axis=1)
         return df[['file_name', 'labels']]
 
     def decode_labels(self, labels):
@@ -76,11 +85,14 @@ def normalize_image(image):
     transform_list = [transforms.PILToTensor()]
     match image.size:
         case (4288, 2848):
-            transform_list.append(transforms.Normalize(MEAN_4288_2848, STD_4288_2848))
+            transform_list.append(transforms.Normalize(
+                MEAN_4288_2848, STD_4288_2848))
         case (2144, 1424):
-            transform_list.append(transforms.Normalize(MEAN_2144_1424, STD_2144_1424))
+            transform_list.append(transforms.Normalize(
+                MEAN_2144_1424, STD_2144_1424))
         case (2048, 1536):
-            transform_list.append(transforms.Normalize(MEAN_2048_1536, STD_2048_1536))
+            transform_list.append(transforms.Normalize(
+                MEAN_2048_1536, STD_2048_1536))
         case _:
             transform_list.append(transforms.Normalize(MEAN, STD))
 
@@ -109,19 +121,13 @@ def get_image_variations(image):
     return [image, image_eq, image_sharp]
 
 
-def transform_image(image):
-    image = resize_image(image)
-    return get_image_variations(image)
-
-
-def transform_augment_image(image):
-    image = resize_image(image)
-    image = transforms.Compose([
+def get_augment_image(image):
+    return transforms.Compose([
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
-        transforms.RandomResizedCrop(IMAGE_SIZE, scale=(0.6, 1.0), ratio=(1, 1)),
+        transforms.RandomResizedCrop(
+            IMAGE_SIZE, scale=(0.8, 1.0), ratio=(1, 1)),
     ])(image)
-    return get_image_variations(image)
 
 
 # Define the data module
@@ -134,7 +140,7 @@ class DataModule(pl.LightningDataModule):
         self.batch_size = batch_size
 
     def train_dataloader(self):
-        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=6)
+        return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=6, persistent_workers=True)
 
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=6, persistent_workers=True)
@@ -148,7 +154,8 @@ class MultiLabelImageClassifierModel(pl.LightningModule):
     def __init__(self, num_classes, input_size, num_channels):
         super().__init__()
         self.model = torch.nn.Sequential(
-            torch.nn.Conv2d(num_channels, 32, kernel_size=3, stride=1, padding=1),
+            torch.nn.Conv2d(num_channels, 32, kernel_size=3,
+                            stride=1, padding=1),
             torch.nn.ReLU(),
             torch.nn.MaxPool2d(kernel_size=2, stride=2),
             torch.nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
@@ -167,7 +174,10 @@ class MultiLabelImageClassifierModel(pl.LightningModule):
             torch.nn.BatchNorm2d(512),
 
             torch.nn.Flatten(),
-            torch.nn.Linear(512 * (input_size // 32) * (input_size // 32), 1024),
+            torch.nn.Linear(512 * (input_size // 32) *
+                            (input_size // 32), 1024),
+            torch.nn.ReLU(),
+            torch.nn.Linear(1024, 1024),
             torch.nn.ReLU(),
             torch.nn.Linear(1024, 1024),
             torch.nn.ReLU(),
@@ -188,11 +198,18 @@ class LModule(pl.LightningModule):
         self.lr = lr
         self.epochs = epochs
         self.data_loader = data_loader
+        self.label_list = label_list
 
-        self.f1_score = torchmetrics.F1Score(top_k=1, task="multiclass", num_classes=len(label_list), average='weighted')
-        self.accuracy = torchmetrics.Accuracy(top_k=1,task="multiclass", num_classes=len(label_list), average='weighted')
-        self.recall = torchmetrics.Recall(top_k=1,task="multiclass", num_classes=len(label_list), average='weighted')
-        self.precision = torchmetrics.Precision(top_k=1,task="multiclass", num_classes=len(label_list), average='weighted')
+        self.f1_score = torchmetrics.F1Score(
+            task="multilabel", num_labels=len(label_list), average=None)
+        self.accuracy = torchmetrics.Accuracy(
+            task="multilabel", num_labels=len(label_list), average=None)
+        self.recall = torchmetrics.Recall(
+            task="multilabel", num_labels=len(label_list), average=None)
+        self.precision = torchmetrics.Precision(
+            task="multilabel", num_labels=len(label_list), average=None)
+        self.auc = torchmetrics.AUROC(
+            task="multilabel", num_labels=len(label_list), average=None)
 
         self.criterion = torch.nn.BCELoss()
 
@@ -203,11 +220,11 @@ class LModule(pl.LightningModule):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.lr)
 #         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=CFG.t_max, eta_min=CFG.min_lr)
         self.scheduler = torch.optim.lr_scheduler.OneCycleLR(self.optimizer,
-                                                                max_lr=self.lr,
-                                                                epochs=self.epochs,
-                                                                steps_per_epoch=len(self.data_loader))
+                                                             max_lr=self.lr,
+                                                             epochs=self.epochs,
+                                                             steps_per_epoch=len(self.data_loader))
 
-        scheduler = {'scheduler': self.scheduler, 'interval': 'step',}
+        scheduler = {'scheduler': self.scheduler, 'interval': 'step', }
 
         return [self.optimizer], [scheduler]
 
@@ -218,20 +235,11 @@ class LModule(pl.LightningModule):
         y_hat = y_hat.to(torch.float32)
         loss = self.criterion(y_hat, y)
 
-        f1_score = self.f1_score(y_hat, y)
-        accuracy = self.accuracy(y_hat, y)
-        recall = self.recall(y_hat, y)
-
-
-        logs = {'train_loss': loss, 'lr': self.optimizers().param_groups[0]['lr'], 'train_f1': f1_score, 'train_accuracy': accuracy, 'train_recall': recall}
-
-        self.log_dict(
-            logs,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=True,
-            logger=True
-        )
+        for metric_name, metric in zip(['f1_score', 'accuracy', 'recall', 'precision', 'auc'], [self.f1_score, self.accuracy, self.recall, self.precision, self.auc]):
+            values = metric(y_hat, y)
+            for i, label in enumerate(self.label_list):
+                self.log(f'train_{metric_name}_{label}',
+                         values[i], on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
         return loss
 
@@ -242,19 +250,11 @@ class LModule(pl.LightningModule):
         y_hat = y_hat.to(torch.float32)
         loss = self.criterion(y_hat, y)
 
-        f1_score = self.f1_score(y_hat, y)
-        accuracy = self.accuracy(y_hat, y)
-        recall = self.recall(y_hat, y)
-
-        logs = {'val_loss': loss, 'val_f1': f1_score, 'val_accuracy': accuracy, 'val_recall': recall}
-
-        self.log_dict(
-            logs,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=True,
-            logger=True
-        )
+        for metric_name, metric in zip(['f1_score', 'accuracy', 'recall', 'precision', 'auc'], [self.f1_score, self.accuracy, self.recall, self.precision, self.auc]):
+            values = metric(y_hat, y)
+            for i, label in enumerate(self.label_list):
+                self.log(f'val_{metric_name}_{label}',
+                         values[i], on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
         return loss
 
@@ -264,19 +264,5 @@ class LModule(pl.LightningModule):
         y = y.to(torch.float32)
         y_hat = y_hat.to(torch.float32)
         loss = self.criterion(y_hat, y)
-
-        f1_score = self.f1_score(y_hat, y)
-        accuracy = self.accuracy(y_hat, y)
-        recall = self.recall(y_hat, y)
-
-        logs = {'test_loss': loss, 'test_f1': f1_score, 'test_accuracy': accuracy, 'test_recall': recall}
-
-        self.log_dict(
-            logs,
-            on_step=False,
-            on_epoch=True,
-            prog_bar=True,
-            logger=True
-        )
 
         return loss

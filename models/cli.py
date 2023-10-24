@@ -2,23 +2,33 @@ import torch
 import lightning.pytorch as pl
 import pandas as pd
 import sys
-from classifier import DataModule, MultiLabelImageClassifierModel, LModule, MultiLabelDataset, transform_augment_image, transform_image, normalize_image, IMAGE_SIZE, BATCH_SIZE
+from classifier import DataModule, MultiLabelImageClassifierModel, LModule, MultiLabelDataset, resize_image, get_image_variations, get_augment_image, normalize_image, IMAGE_SIZE, BATCH_SIZE
 
 MODEL_NAME = 'Hope'
-LABEL_RARITY_THRESHOLD = 20
-TEST_SCORE_THRESHOLD = 0.4
+LABEL_RARITY_THRESHOLD = 50
+TEST_SCORE_THRESHOLD = 0.5
+EPOCHS = 10
+
 
 def train(train_dataset, val_dataset, test_dataset, one_hot_labels):
-    data_loader = DataModule(train_dataset, val_dataset, test_dataset, batch_size=BATCH_SIZE)
+    data_loader = DataModule(train_dataset, val_dataset,
+                             test_dataset, batch_size=BATCH_SIZE)
 
-    model = MultiLabelImageClassifierModel(num_classes=len(one_hot_labels), input_size=IMAGE_SIZE, num_channels=7)
+    model = MultiLabelImageClassifierModel(num_classes=len(
+        one_hot_labels), input_size=IMAGE_SIZE, num_channels=7)
 
-    lmodule = LModule(model, one_hot_labels, lr=1e-3, epochs=10, data_loader=data_loader.train_dataloader())
+    lmodule = LModule(model, one_hot_labels, lr=1e-3, epochs=EPOCHS,
+                      data_loader=data_loader.train_dataloader())
+
+    # Load from checkpoint
+    lmodule = LModule.load_from_checkpoint(
+        './lightning_logs/version_0/checkpoints/epoch=9-step=600.ckpt', model=model, label_list=one_hot_labels, lr=1e-3, epochs=EPOCHS, data_loader=data_loader.train_dataloader())
 
     # Train the model
     print('Starting training.')
-    trainer = pl.Trainer(max_epochs=10)
-    trainer.fit(lmodule, data_loader.train_dataloader(), data_loader.val_dataloader())
+    trainer = pl.Trainer(max_epochs=EPOCHS)
+    trainer.fit(lmodule, data_loader.train_dataloader(),
+                data_loader.val_dataloader())
     print('Training finished.')
 
     # Save model
@@ -28,7 +38,8 @@ def train(train_dataset, val_dataset, test_dataset, one_hot_labels):
 
 
 def test(index, test_dataset, one_hot_labels, label_names):
-    model = MultiLabelImageClassifierModel(num_classes=len(one_hot_labels), input_size=IMAGE_SIZE, num_channels=7)
+    model = MultiLabelImageClassifierModel(num_classes=len(
+        one_hot_labels), input_size=IMAGE_SIZE, num_channels=7)
     model.load_state_dict(torch.load(f'./{MODEL_NAME}.pth'))
 
     model.eval()
@@ -38,10 +49,13 @@ def test(index, test_dataset, one_hot_labels, label_names):
     image = image.unsqueeze(0)
     pred = model(image)
 
-    print(f'Threshold: {TEST_SCORE_THRESHOLD} ({int(TEST_SCORE_THRESHOLD * 100)}%)')
+    print(
+        f'Threshold: {TEST_SCORE_THRESHOLD} ({int(TEST_SCORE_THRESHOLD * 100)}%)')
     print('Image: ' + test_dataset.df.iloc[index]['file_name'])
-    print('Labels: ' + ', '.join([label_names[i] for i, x in enumerate(label) if x == 1]))
-    print('Predictions: ' + ', '.join([label_names[i] for i, x in enumerate(pred[0]) if x > TEST_SCORE_THRESHOLD]))
+    print('Labels: ' + ', '.join([label_names[i]
+          for i, x in enumerate(label) if x == 1]))
+    print('Predictions: ' + ', '.join([label_names[i]
+          for i, x in enumerate(pred[0]) if x > TEST_SCORE_THRESHOLD]))
     print('')
 
     predictions = sorted(enumerate(pred[0]), key=lambda x: x[1], reverse=True)
@@ -52,9 +66,11 @@ def test(index, test_dataset, one_hot_labels, label_names):
         correct = guessed == label[label_idx]
 
         if correct:
-            print(f"✅   Correct for {label_names[label_idx]}: {float(score) * 100:.2f}% (Guessed: {'Present' if guessed else 'Absent'})")
+            print(
+                f"✅   Correct for {label_names[label_idx]}: {float(score) * 100:.2f}% (Guessed: {'Present' if guessed else 'Absent'})")
         else:
-            print(f"❌ Incorrect for {label_names[label_idx]}: {float(score) * 100:.2f}% (Guessed: {'Present' if guessed else 'Absent'}, Expected: {'Present' if label[label_idx] else 'Absent'})")
+            print(
+                f"❌ Incorrect for {label_names[label_idx]}: {float(score) * 100:.2f}% (Guessed: {'Present' if guessed else 'Absent'}, Expected: {'Present' if label[label_idx] else 'Absent'})")
 
 
 if __name__ == '__main__':
@@ -77,12 +93,17 @@ if __name__ == '__main__':
     val_df['file_name'] = val_df['file_name'].apply(lambda x: val_dir + x)
     test_df['file_name'] = test_df['file_name'].apply(lambda x: test_dir + x)
 
-    one_hot_labels = train_df.drop('file_name', axis=1).sum()[train_df.drop('file_name', axis=1).sum() > LABEL_RARITY_THRESHOLD].index
-    label_names = train_df.drop('file_name', axis=1)[one_hot_labels].columns.tolist()
+    one_hot_labels = train_df.drop('file_name', axis=1).sum()[train_df.drop(
+        'file_name', axis=1).sum() > LABEL_RARITY_THRESHOLD].index
+    label_names = train_df.drop('file_name', axis=1)[
+        one_hot_labels].columns.tolist()
 
-    train_dataset = MultiLabelDataset(train_df, transforms=transform_augment_image, label_list=one_hot_labels, normalize=normalize_image)
-    val_dataset = MultiLabelDataset(val_df, transforms=transform_image, label_list=one_hot_labels, normalize=normalize_image)
-    test_dataset = MultiLabelDataset(test_df, transforms=transform_image, label_list=one_hot_labels, normalize=normalize_image)
+    train_dataset = MultiLabelDataset(
+        train_df, transforms=get_image_variations, label_list=one_hot_labels, normalize=normalize_image, augment=get_augment_image, resize=resize_image)
+    val_dataset = MultiLabelDataset(
+        val_df, transforms=get_image_variations, label_list=one_hot_labels, normalize=normalize_image, resize=resize_image)
+    test_dataset = MultiLabelDataset(
+        test_df, transforms=get_image_variations, label_list=one_hot_labels, normalize=normalize_image, resize=resize_image)
 
     print('Setup finished')
 
