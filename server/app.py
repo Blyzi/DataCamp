@@ -2,11 +2,12 @@ from flask import Flask, request
 from PIL import Image
 import torch
 from torchvision.transforms import v2 as transforms
-from models.classifier import MultiLabelImageClassifierModel, normalize_image, transform_image
+from models.classifier import MultiLabelImageClassifierModel, normalize_image, get_image_variations, resize_image
 
 app = Flask(__name__)
 
-LABELS = ['Disease_Risk', 'DR', 'ARMD', 'MH', 'DN', 'MYA', 'BRVO', 'TSLN', 'LS', 'CSR', 'ODC', 'CRVO', 'ODP', 'ODE', 'RS', 'CRS', 'RPEC']
+# LABELS = ['Disease_Risk', 'DR', 'ARMD', 'MH', 'DN', 'MYA', 'BRVO', 'TSLN', 'LS', 'CSR', 'ODC', 'CRVO', 'ODP', 'ODE', 'RS', 'CRS', 'RPEC']
+LABELS = ['Disease_Risk', 'DR', 'ARMD', 'MH', 'DN', 'MYA', 'BRVO', 'TSLN', 'ODC', 'ODP', 'ODE']
 IMAGE_SIZE = 250
 NUM_CHANNELS = 7
 TEST_SCORE_THRESHOLD = 0.1
@@ -15,18 +16,18 @@ model = MultiLabelImageClassifierModel(num_classes=len(LABELS), input_size=IMAGE
 model.load_state_dict(torch.load(f'./models/Hope.pth'))
 model.eval()
 
-def prepare_pil_image(image):
+def prepare_image(image):
     image = Image.open(image)
+
+    image = resize_image(image)
 
     image = transforms.Compose([
         transforms.ToImage(),
         transforms.ToDtype(torch.float32, scale=True),
     ])(image)
 
-    image = normalize_image(image)
-
     image = transforms.ToPILImage()(image)
-    image_layers = transform_image(image)
+    image_layers = get_image_variations(image)
 
     for i, img in enumerate(image_layers):
         image_layers[i] = transforms.Compose([
@@ -34,14 +35,17 @@ def prepare_pil_image(image):
             transforms.ToDtype(torch.float32, scale=True),
         ])(img)
 
+    image_layers[0] = normalize_image(image_layers[0])
+
     image = torch.cat(image_layers, dim=0)
+
     image = image.unsqueeze(0)
 
     return image
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    image = prepare_pil_image(request.files['image'])
+    image = prepare_image(request.files['image'])
 
     predictions = model(image)
     predictions = sorted(enumerate(predictions[0]), key=lambda x: x[1], reverse=True)
