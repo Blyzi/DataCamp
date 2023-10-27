@@ -9,12 +9,6 @@ export default function ResultPage() {
   const navigate = useNavigate();
 
   const data = state?.predictions;
-  console.log(
-    "state",
-    state,
-    data,
-    data.map((x) => x.label)
-  );
 
   useEffect(() => {
     if (state == null) {
@@ -170,12 +164,6 @@ export default function ResultPage() {
       ),
     },
   ].filter((x) => data.map((x) => x.label).includes(x.label));
-
-  console.log(
-    "threshold",
-    threshold,
-    data.map((x) => x.label)
-  );
 
   return (
     <div className="min-h-screen w-screen flex flex-col justify-center items-center gap-8">
