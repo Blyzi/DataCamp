@@ -176,8 +176,9 @@ export default function ResultPage() {
           </a>
         </div>
       </div>
-      <div>
+      <div className="h-1/3 w-1/2">
         <VictoryChart
+          style={{ parent: { minWidth: "100%" } }}
           animate={{
             duration: 2000,
             onLoad: { duration: 1000 },
