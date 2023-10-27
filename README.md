@@ -64,7 +64,7 @@ Our solution comprises the following components:
 
 You can download our AI models from the following links:
 
-1. [Interpretability Model (PyTorch Model)](link-to-pytorch-model)
+1. [Interpretability Model (PyTorch Model)](https://drive.google.com/file/d/1bwfiVbSNBQVwIJWINBVcgkv81QB9R2hX/view?usp=sharing)
 
 Download this model and put it in the `models` folder. Then you can run the following command to use the model:
 
