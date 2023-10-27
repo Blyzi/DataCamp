@@ -50,22 +50,29 @@ export default function InfoPage() {
   ];
 
   const specificDiseases = [
-    { label: "DR", accuracy: 0.1, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "ARMD", accuracy: 0.4, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "MH", accuracy: 0.2, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "DN", accuracy: 0.5, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "MYA", accuracy: 0.2, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "BRVO", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "TSLN", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "LS", accuracy: 0.9, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "CSR", accuracy: 0.4, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "ODC", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "CRVO", accuracy: 0.4, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "ODP", accuracy: 0.5, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "ODE", accuracy: 0.1, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "RS", accuracy: 0.2, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "CRS", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
-    { label: "RPEC", accuracy: 0.5, recall: 0.5, f1: 0.5, precision: 0.5 },
+    {
+      label: "Disease_Risk",
+      accuracy: 0.8031,
+      recall: 0.9941,
+      f1: 0.8887,
+      auroc: 0.8129,
+    },
+    { label: "DR", accuracy: 0.8031, recall: 0.0, f1: 0.0, auroc: 0.713 },
+    { label: "ARMD", accuracy: 0.9516, recall: 0.0, f1: 0.0, auroc: 0.6734 },
+    {
+      label: "MH",
+      accuracy: 0.8406,
+      recall: 0.0192,
+      f1: 0.0377,
+      auroc: 0.8049,
+    },
+    { label: "DN", accuracy: 0.9281, recall: 0.0, f1: 0.0, auroc: 0.5834 },
+    { label: "MYA", accuracy: 0.95, recall: 0.0, f1: 0.0, auroc: 0.8096 },
+    { label: "BRVO", accuracy: 0.9641, recall: 0.0, f1: 0.0, auroc: 0.5868 },
+    { label: "TSLN", accuracy: 0.9172, recall: 0.0, f1: 0.0, auroc: 0.6825 },
+    { label: "ODC", accuracy: 0.8578, recall: 0.0, f1: 0.0, auroc: 0.5678 },
+    { label: "ODP", accuracy: 0.9625, recall: 0.0, f1: 0.0, auroc: 0.4556 },
+    { label: "ODE", accuracy: 0.9734, recall: 0.0, f1: 0.0, auroc: 0.7185 },
   ];
 
   return (
@@ -184,7 +191,7 @@ export default function InfoPage() {
               >
                 <VictoryArea
                   data={specificDiseases}
-                  y="precision"
+                  y="f1"
                   style={{
                     data: {
                       fill: "#00B0FF",
@@ -192,7 +199,7 @@ export default function InfoPage() {
                   }}
                 />
               </VictoryChart>
-              <div className="text-lg text-center">Recall</div>
+              <div className="text-lg text-center">F1 Score</div>
             </div>
             <div className="flex flex-col">
               <VictoryChart
@@ -206,7 +213,7 @@ export default function InfoPage() {
               >
                 <VictoryArea
                   data={specificDiseases}
-                  y="f1"
+                  y="auroc"
                   style={{
                     data: {
                       fill: "#00B0FF",
@@ -214,7 +221,7 @@ export default function InfoPage() {
                   }}
                 />
               </VictoryChart>
-              <div className="text-lg text-center">F1 Score</div>
+              <div className="text-lg text-center">AUROc</div>
             </div>
           </div>
         </div>

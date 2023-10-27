@@ -1,11 +1,5 @@
 import { useLocation } from "react-router-dom";
-import {
-  VictoryChart,
-  VictoryBar,
-  VictoryAxis,
-  VictoryLine,
-  VictoryLabel,
-} from "victory";
+import { VictoryChart, VictoryBar, VictoryAxis } from "victory";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -31,7 +25,7 @@ export default function ResultPage() {
   const threshold = [
     {
       label: "Disease_Risk",
-      score: 0.5,
+      score: 0.45,
       description: (
         <div>
           <span className="bold">Disease_Risk (Risk of Disease):</span> This
@@ -45,7 +39,7 @@ export default function ResultPage() {
     },
     {
       label: "DR",
-      score: 0.5,
+      score: 0.35,
       description: (
         <div>
           <span className="bold">DR (Diabetic Retinopathy):</span> Diabetic
@@ -59,7 +53,7 @@ export default function ResultPage() {
     },
     {
       label: "ARMD",
-      score: 0.5,
+      score: 0.4,
       description: (
         <div>
           <span className="bold">ARMD (Age-Related Macular Degeneration):</span>
@@ -73,7 +67,7 @@ export default function ResultPage() {
     },
     {
       label: "MH",
-      score: 0.5,
+      score: 0.41,
       description: (
         <div>
           <span className="bold">MH (Media Haze):</span> Media haze is a general
@@ -86,7 +80,7 @@ export default function ResultPage() {
     },
     {
       label: "DN",
-      score: 0.5,
+      score: 0.39,
       description: (
         <div>
           <span className="bold">DN (Drusens):</span> Drusens are small yellow
@@ -99,7 +93,7 @@ export default function ResultPage() {
     },
     {
       label: "MYA",
-      score: 0.5,
+      score: 0.32,
       description: (
         <div>
           <span className="bold">MYA (Myopia):</span> Myopia, commonly known as
@@ -111,7 +105,7 @@ export default function ResultPage() {
     },
     {
       label: "BRVO",
-      score: 0.5,
+      score: 0.4,
       description: (
         <div>
           <span className="bold">BRVO (Branch Retinal Vein Occlusion):</span>{" "}
@@ -124,7 +118,7 @@ export default function ResultPage() {
     },
     {
       label: "TSLN",
-      score: 0.5,
+      score: 0.37,
       description: (
         <div>
           <span className="bold">TSLN (Tessellation):</span> Tessellation refers
@@ -137,7 +131,7 @@ export default function ResultPage() {
 
     {
       label: "ODC",
-      score: 0.5,
+      score: 0.36,
       description: (
         <div>
           <span className="bold">ODC (Optic Disc Cupping):</span> Optic disc
@@ -151,7 +145,7 @@ export default function ResultPage() {
 
     {
       label: "ODP",
-      score: 0.5,
+      score: 0.38,
       description: (
         <div>
           <span className="bold">ODP (Optic Disc Pallor):</span> Optic disc
@@ -164,7 +158,7 @@ export default function ResultPage() {
     },
     {
       label: "ODE",
-      score: 0.5,
+      score: 0.4,
       description: (
         <div>
           <span className="bold">ODE (Optic Disc Edema):</span> Optic disc edema
@@ -243,6 +237,14 @@ export default function ResultPage() {
         <a className="text-xs text-gray-400" href="/info">
           Information about the analysis
         </a>
+        <div className="flex flex-col items-center gap-2">
+          <a
+            className="border-solid border-2 border-cyan-300 px-2 py-3 rounded-lg"
+            href="/"
+          >
+            Reupload an image
+          </a>
+        </div>
       </div>
     </div>
   );
