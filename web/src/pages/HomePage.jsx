@@ -1,8 +1,25 @@
 import { useState } from "react";
 import { FileUploader } from "react-drag-drop-files";
+import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
   const [uploadedImage, setUploadedImage] = useState(null);
+  const navigate = useNavigate();
+
+  const sendImage = () => {
+    console.log("sending image");
+    const formData = new FormData();
+    formData.append("image", uploadedImage);
+    fetch(import.meta.env.VITE_BASE_URL + "/predict", {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        navigate("/results", { state: data });
+      });
+  };
 
   return (
     <div className="h-screen w-screen flex flex-col justify-center items-center gap-8">
@@ -36,7 +53,7 @@ export default function HomePage() {
             <div className="flex flex-col gap-2 justify-center items-center w-full">
               <button
                 onClick={() => {
-                  setUploadedImage(null);
+                  sendImage();
                 }}
                 className="bg-cyan-400 rounded-xl text-white w-full p-2"
               >

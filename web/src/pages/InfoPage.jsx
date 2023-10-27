@@ -1,3 +1,5 @@
+import { VictoryChart, VictoryArea, VictoryTheme } from "victory";
+
 export default function InfoPage() {
   const diseases = [
     "DR",
@@ -48,22 +50,22 @@ export default function InfoPage() {
   ];
 
   const specificDiseases = [
-    "DR",
-    "ARMD",
-    "MH",
-    "DN",
-    "MYA",
-    "BRVO",
-    "TSLN",
-    "LS",
-    "CSR",
-    "ODC",
-    "CRVO",
-    "ODP",
-    "ODE",
-    "RS",
-    "CRS",
-    "RPEC",
+    { label: "DR", accuracy: 0.1, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "ARMD", accuracy: 0.4, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "MH", accuracy: 0.2, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "DN", accuracy: 0.5, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "MYA", accuracy: 0.2, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "BRVO", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "TSLN", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "LS", accuracy: 0.9, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "CSR", accuracy: 0.4, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "ODC", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "CRVO", accuracy: 0.4, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "ODP", accuracy: 0.5, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "ODE", accuracy: 0.1, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "RS", accuracy: 0.2, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "CRS", accuracy: 0.3, recall: 0.5, f1: 0.5, precision: 0.5 },
+    { label: "RPEC", accuracy: 0.5, recall: 0.5, f1: 0.5, precision: 0.5 },
   ];
 
   return (
@@ -116,13 +118,105 @@ export default function InfoPage() {
             <span
               key={i}
               className={
-                specificDiseases.includes(disease) ? "font-medium" : ""
+                specificDiseases.map((x) => x.label).includes(disease)
+                  ? "font-medium"
+                  : ""
               }
             >
               {disease}
               {i != diseases.length - 1 ? ", " : ""}
             </span>
           ))}
+          <div className="grid grid-cols-4 w-full">
+            <div className="flex flex-col">
+              <VictoryChart
+                polar
+                theme={VictoryTheme.material}
+                domain={{ y: [0, 1] }}
+                animate={{
+                  duration: 2000,
+                  onLoad: { duration: 1000 },
+                }}
+              >
+                <VictoryArea
+                  data={specificDiseases}
+                  y="accuracy"
+                  style={{
+                    data: {
+                      fill: "#00B0FF",
+                    },
+                  }}
+                />
+              </VictoryChart>
+              <div className="text-lg text-center">Accuracy</div>
+            </div>
+            <div className="flex flex-col">
+              <VictoryChart
+                polar
+                theme={VictoryTheme.material}
+                domain={{ y: [0, 1] }}
+                animate={{
+                  duration: 2000,
+                  onLoad: { duration: 1000 },
+                }}
+              >
+                <VictoryArea
+                  data={specificDiseases}
+                  y="recall"
+                  style={{
+                    data: {
+                      fill: "#00B0FF",
+                    },
+                  }}
+                />
+              </VictoryChart>
+              <div className="text-lg text-center">Recall</div>
+            </div>
+            <div className="flex flex-col">
+              <VictoryChart
+                polar
+                theme={VictoryTheme.material}
+                domain={{ y: [0, 1] }}
+                animate={{
+                  duration: 2000,
+                  onLoad: { duration: 1000 },
+                }}
+              >
+                <VictoryArea
+                  data={specificDiseases}
+                  y="precision"
+                  style={{
+                    data: {
+                      fill: "#00B0FF",
+                    },
+                  }}
+                />
+              </VictoryChart>
+              <div className="text-lg text-center">Recall</div>
+            </div>
+            <div className="flex flex-col">
+              <VictoryChart
+                polar
+                theme={VictoryTheme.material}
+                domain={{ y: [0, 1] }}
+                animate={{
+                  duration: 2000,
+                  onLoad: { duration: 1000 },
+                }}
+              >
+                <VictoryArea
+                  data={specificDiseases}
+                  y="f1"
+                  style={{
+                    data: {
+                      fill: "#00B0FF",
+                    },
+                  }}
+                />
+              </VictoryChart>
+              <div className="text-lg text-center">F1 Score</div>
+            </div>
+          </div>
         </div>
         <div className="text-lg font-logo">Join Us on the Journey</div>
         <div className="mb-4">
