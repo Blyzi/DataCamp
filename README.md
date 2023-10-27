@@ -69,6 +69,7 @@ You can download our AI models from the following links:
 Download this model and put it in the `models` folder. Then you can run the following command to use the model:
 
 ```bash
+pip3 install -r requirements.txt
 python3 cli.py test
 ```
 

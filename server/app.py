@@ -1,10 +1,12 @@
 from flask import Flask, request
+from flask_cors import CORS
 from PIL import Image
 import torch
 from torchvision.transforms import v2 as transforms
 from models.classifier import MultiLabelImageClassifierModel, normalize_image, get_image_variations, resize_image
 
 app = Flask(__name__)
+CORS(app)
 
 # LABELS = ['Disease_Risk', 'DR', 'ARMD', 'MH', 'DN', 'MYA', 'BRVO', 'TSLN', 'LS', 'CSR', 'ODC', 'CRVO', 'ODP', 'ODE', 'RS', 'CRS', 'RPEC']
 LABELS = ['Disease_Risk', 'DR', 'ARMD', 'MH', 'DN', 'MYA', 'BRVO', 'TSLN', 'ODC', 'ODP', 'ODE']
